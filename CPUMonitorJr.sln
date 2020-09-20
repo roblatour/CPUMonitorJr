@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29424.173
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CPUMonitorJr", "CPUMonitorJr\CPUMonitorJr.vbproj", "{B91F800C-6790-4E06-89CA-427852F1555E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Arduino_CPUMonitorJr", "Arduino_CPUMonitorJr\Arduino_CPUMonitorJr.vcxproj", "{C5F80730-F44F-4478-BDAE-6634EFC2CA88}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Enclosure_3DPrintFiles", "Enclosure_3DPrintFiles", "{4C22A6AD-BFBC-497A-A0FE-68A3F32043FC}"
+	ProjectSection(SolutionItems) = preProject
+		Enclosure_3DPrintFiles\Box.stl = Enclosure_3DPrintFiles\Box.stl
+		Enclosure_3DPrintFiles\CPUMonitorJr v7.f3d = Enclosure_3DPrintFiles\CPUMonitorJr v7.f3d
+		Enclosure_3DPrintFiles\Faceplate.stl = Enclosure_3DPrintFiles\Faceplate.stl
+		Enclosure_3DPrintFiles\Lid.stl = Enclosure_3DPrintFiles\Lid.stl
+		Enclosure_3DPrintFiles\README.txt = Enclosure_3DPrintFiles\README.txt
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B91F800C-6790-4E06-89CA-427852F1555E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B91F800C-6790-4E06-89CA-427852F1555E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B91F800C-6790-4E06-89CA-427852F1555E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B91F800C-6790-4E06-89CA-427852F1555E}.Debug|x86.Build.0 = Debug|Any CPU
+		{B91F800C-6790-4E06-89CA-427852F1555E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B91F800C-6790-4E06-89CA-427852F1555E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B91F800C-6790-4E06-89CA-427852F1555E}.Release|x86.ActiveCfg = Release|Any CPU
+		{B91F800C-6790-4E06-89CA-427852F1555E}.Release|x86.Build.0 = Release|Any CPU
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|x86.ActiveCfg = Debug|Win32
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|x86.Build.0 = Debug|Win32
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|Any CPU.ActiveCfg = Release|Win32
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.ActiveCfg = Release|Win32
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {738E4C20-0B2D-48B9-868E-E5D06A1C6A32}
+	EndGlobalSection
+EndGlobal
