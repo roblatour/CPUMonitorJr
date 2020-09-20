@@ -1,5 +1,7 @@
 // Copyright Rob Latour, 2020, All Rights Reserved
 //
+// www.rlatour.com/cpumonitorjr
+//
 // tested with a doit esp32 devkit v1 board and
 // both a 1602 and 2004 LCD dislay (seperately) driven by an I2C Serial Board module;
 //
