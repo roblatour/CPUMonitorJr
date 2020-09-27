@@ -601,7 +601,7 @@ void Advertise() {
 
     memset(buffer, 0, len - 1);
 
-    delay(2500); // do not remove this pause
+    delay(450); // do not remove this pause
 
 }
 
