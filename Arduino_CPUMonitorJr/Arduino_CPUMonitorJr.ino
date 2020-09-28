@@ -546,6 +546,8 @@ void setupWiFi() {
         lcd.setCursor(0, 3); lcd.print("Connected to");
         lcd.setCursor(0, 4); lcd.print(WiFi.localIP().toString());
     }
+	
+	 delay(1500);
 
 };
 
