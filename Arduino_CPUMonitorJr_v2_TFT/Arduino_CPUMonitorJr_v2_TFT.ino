@@ -70,9 +70,9 @@ const unsigned long AdvertiseThreshold = 15;             // if no data is receiv
 
 unsigned long lastTimeDataWasReceivedFromComputer = 0;
 
-// Readings 
+// Readings
 
-bool currentReadingsAreAvailable = false;              
+bool currentReadingsAreAvailable = false;
 
 bool clearGraphData = true;
 
@@ -257,7 +257,7 @@ void setupDisplay() {
   // Turn on power to LCD display
   digitalWrite(PIN_POWER_ON, HIGH);
   pinMode(PIN_POWER_ON, OUTPUT);
-   
+
   // Setup show on LILYGO T-Display-S3
   showPanel.init();
 
@@ -672,9 +672,11 @@ void updateGraph() {
     const int32_t spacingBetweenBars = 1;
     int32_t barWidth = (int32_t)(gw / currentNumberOfProcessors) - spacingBetweenBars;
     int32_t barWidthPlusSpacingBetweenBars = barWidth + spacingBetweenBars;
+    int32_t xOffsetToCentreBarsInGraph = (gw - barWidthPlusSpacingBetweenBars * currentNumberOfProcessors) / 2 - 1;
+    if (xOffsetToCentreBarsInGraph < 0) xOffsetToCentreBarsInGraph = 0;
 
     for (int32_t i = 0; i < currentNumberOfProcessors; i++)
-      sprite.fillRect(gx + i * barWidthPlusSpacingBetweenBars, gy + gh - (int32_t)currentCPUValue[i] - 1, barWidth, (int32_t)currentCPUValue[i], currentCPUBarGraphColour);
+      sprite.fillRect(gx + xOffsetToCentreBarsInGraph + i * barWidthPlusSpacingBetweenBars, gy + gh - (int32_t)currentCPUValue[i] - 1, barWidth, (int32_t)currentCPUValue[i], currentCPUBarGraphColour);
   }
 
   if (showHistoricalLineGraph) {
@@ -1438,5 +1440,4 @@ void loop() {
   // loop time should be about 35ms regardless of if incomming data is being processed or not
   // unsigned long endloop = millis();
   // if (DEBUG_IS_ON) Serial.println("Loop time: " + String(endloop - startloop));
-
 }
