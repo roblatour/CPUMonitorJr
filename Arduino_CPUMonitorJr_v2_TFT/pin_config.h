@@ -1,4 +1,3 @@
-/*ESP32S3*/
 #define PIN_LCD_BL                   38
 
 #define PIN_LCD_D0                   39
