@@ -1,4 +1,4 @@
-https://www.thingiverse.com/thing:5696011 by Zapdos (Rob Latour), 
+https://www.printables.com/model/339237-case-for-lilygo-t-display-s3-without-header-pins 
 
 find out more at www.rlatour.com/cpumonitorjr
 
