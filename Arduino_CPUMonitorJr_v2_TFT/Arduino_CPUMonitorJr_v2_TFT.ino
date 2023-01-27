@@ -56,7 +56,7 @@ unsigned long LastTimeWiFiWasConnected;
 const char* OTAHostName = SECRET_OTA_HOSTNAME;
 const char* OTAPassword = SECRET_OTA_PASSWORD;
 
-// Comunication with computer stuff
+// Communication with computer stuff
 const int udpPort = UDP_PORT;
 const char* udpBroadcastAddress = UDP_BROADCAST_ADDRESS;
 
@@ -65,7 +65,7 @@ WebSocketsClient webSocket;
 AsyncWebServer server(80);
 AsyncWebSocket ws("/cpumonitorjr" + String(udpPort));
 
-const int secondsSinceLastUpdateReceivedToShowTime = 5;  // if communications have not been recieved from the computer after this many seconds, then show date and time screen rather than bar graph screen
+const int secondsSinceLastUpdateReceivedToShowTime = 5;  // if communications have not been received from the computer after this many seconds, then show date and time screen rather than bar graph screen
 const unsigned long AdvertiseThreshold = 15;             // if no data is received from the computer after this many seconds, make a request for it
 
 unsigned long lastTimeDataWasReceivedFromComputer = 0;
@@ -174,29 +174,6 @@ void setupButtons() {
 }
 
 
-void SetupEEPROM() {
-
-  // The EEPROM is used to save and store settings so that they are retained when the device is powered off and restored when it is powered back on
-
-  byte Settings[numberOfSavedSettingsInEEPROM];
-
-  EEPROM.begin(numberOfSavedSettingsInEEPROM + 1);
-
-  byte TestForInitializedEEPROM = EEPROM.read(eepromInitializationConfirmationAddress);
-
-  if (TestForInitializedEEPROM == eepromInitializationConfirmationValue) {
-    // The EEPROM has previousily been intialized, so load the settings based on the values in the EEPROM
-    LoadSettingsFromNonVolatileMemory();
-
-  } else {
-    // The EEPROM has not been intialized, so initialize it now
-    EEPROM.write(eepromInitializationConfirmationAddress, eepromInitializationConfirmationValue);
-    EEPROM.commit();
-    // store the default values into the EEPROM for use next time
-    StoreSettingsInNonVolatileMemory();
-  };
-}
-
 void StoreSettingsInNonVolatileMemory() {
 
   byte Setting[numberOfSavedSettingsInEEPROM];
@@ -250,6 +227,29 @@ void LoadSettingsFromNonVolatileMemory() {
   showDate = Setting[11];
   showHistoricalLineGraph = Setting[12];
   showCurrentCPUBarGraphs = Setting[13];
+}
+ 
+void SetupEEPROM() {
+
+  // The EEPROM is used to save and store settings so that they are retained when the device is powered off and restored when it is powered back on
+
+  byte Settings[numberOfSavedSettingsInEEPROM];
+
+  EEPROM.begin(numberOfSavedSettingsInEEPROM + 1);
+
+  byte TestForInitializedEEPROM = EEPROM.read(eepromInitializationConfirmationAddress);
+
+  if (TestForInitializedEEPROM == eepromInitializationConfirmationValue) {
+    // The EEPROM has previously been initalized, so load the settings based on the values in the EEPROM
+    LoadSettingsFromNonVolatileMemory();
+
+  } else {
+    // The EEPROM has not been initalized, so initialize it now
+    EEPROM.write(eepromInitializationConfirmationAddress, eepromInitializationConfirmationValue);
+    EEPROM.commit();
+    // store the default values into the EEPROM for use next time
+    StoreSettingsInNonVolatileMemory();
+  };
 }
 
 void setupDisplay() {
@@ -366,11 +366,31 @@ void checkWiFiConnection() {
 
 void setupTime() {
 
-  // when the time will originally be drawn and set from the intenet
+  // when the time will originally be drawn and set from the internet
   // (this in case the connection to the computer being monitored is down at the time the esp32 device is powered on)
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
   // later in processing, the time will be drawn and set from the remote computer's time if the option UPDATE_TIME_FROM_CONNECTED_COMPUTER is true
+}
+
+bool checkButton(int pinNumber) {
+
+  bool returnValue = false;
+
+  if (digitalRead(pinNumber) == 0) {
+
+    // weed out false positives caused by debounce
+    delay(10);
+    if (digitalRead(pinNumber) == 0)
+
+      returnValue = true;
+
+    // hold here until the button is released
+    while (digitalRead(pinNumber) == 0)
+      delay(10);
+  };
+
+  return returnValue;
 }
 
 void checkButtonsOnMainWindow() {
@@ -470,7 +490,7 @@ void updateTemperature() {
       else
         sCurrentTempReading.concat("  F");
 
-      // draw the temperture value
+      // draw the temperature value
       sprite.drawString(sCurrentTempReading, xOffset + objectW - 2, yOffset + objectH / 2, 2);
 
       // draw the degree symbol
@@ -654,7 +674,7 @@ void updateGraph() {
   int32_t gy = yOffset + boarder;  // graph y axis starting pixel
 
   int32_t gw = objectW - 2 * boarder;  // graph width
-  int32_t gh = objectH - 2 * boarder;  // graph hieght
+  int32_t gh = objectH - 2 * boarder;  // graph height
 
   if (showCurrentCPUBarGraphs || showHistoricalLineGraph) {
     // draw frame
@@ -694,7 +714,7 @@ void updateGraph() {
         // draw just the line
         sprite.drawLine(i + gx - 1, gy + gh - readings[i] - 1, i + gx, gy + gh - readings[i + 1] - 1, historicalLineGraphColour);
       } else {
-        // draw just the line and fill beneith it
+        // draw just the line and fill beneath it
         sprite.drawLine(i + gx - 1, gy + gh - readings[i] - 1, i + gx, gy + gh - 1, historicalLineGraphColour);  // draw and fill
       };
   };
@@ -704,26 +724,6 @@ void updateGraph() {
 void drawDisplay() {
 
   sprite.pushSprite(0, 0);
-}
-
-bool checkButton(int pinNumber) {
-
-  bool returnValue = false;
-
-  if (digitalRead(pinNumber) == 0) {
-
-    // weed out false positives caused by debounce
-    delay(10);
-    if (digitalRead(pinNumber) == 0)
-
-      returnValue = true;
-
-    // hold here until the button is released
-    while (digitalRead(pinNumber) == 0)
-      delay(10);
-  };
-
-  return returnValue;
 }
 
 
@@ -792,11 +792,11 @@ void onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventTyp
 
   else if (type == WS_EVT_DATA) {
 
-    int tranactionCode = data[0];  // trans code 0 = date and time; trans code 1 = computer name and ip addresses; trans code 2 = memory, temperature and cpu readings
+    int transactionCode = data[0];  // trans code 0 = date and time; trans code 1 = computer name and ip addresses; trans code 2 = memory, temperature and cpu readings
 
-    // if (DEBUG_IS_ON) Serial.println("Transaction code: " + String(tranactionCode));
+    // if (DEBUG_IS_ON) Serial.println("Transaction code: " + String(transactionCode));
 
-    switch (tranactionCode) {
+    switch (transactionCode) {
 
       case 0:  // date and time stream
         {
@@ -890,7 +890,7 @@ void onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventTyp
           //if (DEBUG_IS_ON) Serial.print(" " + String(currentPercentOfMemoryUsed));
 
 
-          // update the current average tempurature from passed data
+          // update the current average temperature from passed data
           // whole part of the average temperature value is in byte 3, decimal part is in byte 4
 
           currentAverageTempReading = data[3] + (float(data[4]) / float(10));
@@ -904,7 +904,7 @@ void onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventTyp
           // if (DEBUG_IS_ON) Serial.println(String(currentAverageTempReading));
 
 
-          // update the current maximum tempurature from passed data
+          // update the current maximum temperature from passed data
           // whole part of the maximum temperature value is in byte 5, decimal part is in byte 5
 
           currentMaximumTempReading = data[5] + (float(data[6]) / float(10));
@@ -926,7 +926,7 @@ void onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventTyp
           for (uint8_t i = 0; i < currentNumberOfProcessors; i++)
             currentCPUValue[i] = data[i + 8];
 
-          // calculate average CPU value to polulate the Line Graph
+          // calculate average CPU value to populate the Line Graph
           double workingTotal = 0;
           for (uint8_t i = 0; i < currentNumberOfProcessors; i++)
             workingTotal += currentCPUValue[i];
@@ -1137,7 +1137,7 @@ void showSettings() {
 
   selectectionsChosenOption[8] = 0;
 
-  // contine to loop here until the user chooses to exit the Settings windows
+  // continue to loop here until the user chooses to exit the Settings windows
 
   while (showTheSettingsScreen) {
 
@@ -1152,7 +1152,7 @@ void showSettings() {
 
       else
 
-        // User has choosen to advance to the mext setting
+        // User has choosen to advance to the next setting
         currentSettingIndex++;
     };
 
@@ -1193,7 +1193,7 @@ void showSettings() {
 
         if (selectectionsChosenOption[numberOfSettingsShownOnSettingScreen - 2] == 2) {
 
-          // retore factory defaults
+          // restore factory defaults
 
           showComputerName = SHOW_COMPUTER_NAME;
 
@@ -1222,7 +1222,7 @@ void showSettings() {
 
         // some house keeping before returning the main processing loop:
 
-        // prevent main loop from thinking the wifi / socket connections were down (as niether had been confirmed as up all the time the user was in the settings window)
+        // prevent main loop from thinking the wifi / socket connections were down (as neither had been confirmed as up all the time the user was in the settings window)
         LastTimeWiFiWasConnected = millis();
         lastTimeDataWasReceivedFromComputer = millis();
 
@@ -1353,7 +1353,7 @@ void showAbout() {
   sprite.setTextDatum(BR_DATUM);
   sprite.drawString("Main screen ->", TFT_Width, TFT_Height - 12, 1);
 
-  // I woun't be heart broken if you remove this next line :-)
+  // I won't be heart broken if you remove this next line :-)
   sprite.pushImage(0, 0, 192, 170, image_data_Rob);
 
   drawDisplay();
