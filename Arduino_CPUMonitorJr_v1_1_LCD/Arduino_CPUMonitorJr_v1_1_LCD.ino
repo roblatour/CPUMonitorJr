@@ -69,6 +69,10 @@ const int lcdI2CAddress = 0x27;                            // lcd I2C address; i
 
 const int udpPort = 44445;                                 // UDP port used to let your computer know your esp32's ip address so your computer can establish a websocket link
 const char* udpAddress = "255.255.255.255";                // UDP broadcast address
+														   // use "255.255.255.255" if the computer being monitored has a dynamic IP address 
+                                                           // use the IP address of the computer being monitored if it has a static IP address
+														   // note: not all networks support broadcasting to all devices, if this is your case please set your computer to use a static
+														   //       IP address and use that address in this field
 
 const bool reportInFahrenheit = false;                     // if true will report in Farenheit, if false will report in celsius
 const bool showTempUnits = false;                          // if true will show 'C' or 'F' after the degree symbol, if false the degree sign will be shown but no 'F' or 'C' after it

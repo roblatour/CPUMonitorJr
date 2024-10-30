@@ -2,6 +2,10 @@
 
 #define UDP_PORT                                                          44445             // UDP port used to let your computer know your esp32's ip address so your computer can establish a websocket link
 #define UDP_BROADCAST_ADDRESS                                             "255.255.255.255" // UDP broadcast address
+                                                                                            // use "255.255.255.255" if the computer being monitored has a dynamic IP address 
+                                                                                            // use the IP address of the computer being monitored if it has a static IP address
+																							// note: not all networks support broadcasting to all devices, if this is your case please set your computer to use a static
+																							//       IP address and use that address in this field
 
 #define SHOW_WIFI_CONNECTING_STATUS                                       true              // show connecting status 
 #define WIF_CONNECTING_STATUS_COLOUR                                      TFT_GREEN         // if SHOW_WIFI_CONNECTING_STATUS is true: colour of text on display during WIFI connection process
