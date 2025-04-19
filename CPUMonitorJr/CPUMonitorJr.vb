@@ -1,4 +1,5 @@
-﻿' Copyrigth Rob Latour, 2022
+﻿' Copyright Rob Latour, 2025
+Imports System.Runtime.InteropServices
 
 Imports System.Threading
 Imports System.Timers
@@ -20,7 +21,7 @@ Public Class CPUMonitorJr
     '  the frequency at which data is sent to the esp32 is controlled in the setting variable My.Settings.Interval
     '  on the computer side this variable can be changed by editing in the file 'CPUMonitorJr.exe.config' which is found in the same directory as the program 'CPUMonitorJr.exe'
     '  changing the value requires the CPUMonitorJr service to be stopped and restarted
-    '  the value represents the number of milli seconds between update
+    '  the value represents the number of milliseconds between update
     '  for example, 1000 means 1 second between updates
     '  default value is 1000, an number below 200  (1/5th of a second) doesn't work out well as it drives too much overhead
     '  therefore the minimal value you can set is 100; however a value of 1000 seems to give good results
@@ -49,8 +50,8 @@ Public Class CPUMonitorJr
 
     ' used by Open Hardware Monitor to get temperature readings 
 
-    Private updateVisitor As OpenHardwareMonitor.UpdateVisitor = New OpenHardwareMonitor.UpdateVisitor()
-    Private computer As Global.OpenHardwareMonitor.Hardware.Computer = New Global.OpenHardwareMonitor.Hardware.Computer()
+    Private updateVisitor As New OpenHardwareMonitor.UpdateVisitor()
+    Private computer As New Global.OpenHardwareMonitor.Hardware.Computer()
 
     ' used by Core Temp to get temperature readings 
 
@@ -70,6 +71,8 @@ Public Class CPUMonitorJr
     Private gSendTheTime As Boolean = True
     Private gSendTheComputerNameAndIPAddresses As Boolean = True
 
+    Private sw As New Stopwatch
+
     Protected Overrides Sub OnStart(ByVal args() As String)
 
         Try
@@ -84,8 +87,9 @@ Public Class CPUMonitorJr
             ' establish a timer which will be used to trigger sending data to the ESP32
             ' however, don't start it now; rather it will be started once the ESP32 identifies itself later on
 
-            Timer = New System.Timers.Timer()
-            Timer.Enabled = False
+            Timer = New System.Timers.Timer With {
+                .Enabled = False
+            }
             Dim Interval As Integer = Math.Max(My.Settings.Interval, 200) ' determine how frequentely data should be sent to the ESP32, minimum is once every 200 milliseconds
             Timer.Interval = Interval
             AddHandler Timer.Elapsed, AddressOf Timer_Elapsed
@@ -187,11 +191,11 @@ Public Class CPUMonitorJr
 
             gWebSocket = New WebSocket4Net.WebSocket(WebSocketAddress)
 
-            AddHandler gWebSocket.Opened, Sub(s, e) socketOpened(s, e)
-            AddHandler gWebSocket.Error, Sub(s, e) socketError(s, e)
-            AddHandler gWebSocket.Closed, Sub(s, e) socketClosed(s, e)
-            AddHandler gWebSocket.MessageReceived, Sub(s, e) socketMessage(s, e)
-            AddHandler gWebSocket.DataReceived, Sub(s, e) socketDataReceived(s, e)
+            AddHandler gWebSocket.Opened, Sub(s, e) SocketOpened(s, e)
+            AddHandler gWebSocket.Error, Sub(s, e) SocketError(s, e)
+            AddHandler gWebSocket.Closed, Sub(s, e) SocketClosed(s, e)
+            AddHandler gWebSocket.MessageReceived, Sub(s, e) SocketMessage(s, e)
+            AddHandler gWebSocket.DataReceived, Sub(s, e) SocketDataReceived(s, e)
 
             gWebSocket.Open()
 
@@ -212,11 +216,11 @@ Public Class CPUMonitorJr
 
         Try
 
-            RemoveHandler gWebSocket.Opened, Sub(s, e) socketOpened(s, e)
-            RemoveHandler gWebSocket.Error, Sub(s, e) socketError(s, e)
-            RemoveHandler gWebSocket.Closed, Sub(s, e) socketClosed(s, e)
-            RemoveHandler gWebSocket.MessageReceived, Sub(s, e) socketMessage(s, e)
-            RemoveHandler gWebSocket.DataReceived, Sub(s, e) socketDataReceived(s, e)
+            RemoveHandler gWebSocket.Opened, Sub(s, e) SocketOpened(s, e)
+            RemoveHandler gWebSocket.Error, Sub(s, e) SocketError(s, e)
+            RemoveHandler gWebSocket.Closed, Sub(s, e) SocketClosed(s, e)
+            RemoveHandler gWebSocket.MessageReceived, Sub(s, e) SocketMessage(s, e)
+            RemoveHandler gWebSocket.DataReceived, Sub(s, e) SocketDataReceived(s, e)
 
             gWebSocket.Close()
 
@@ -230,7 +234,7 @@ Public Class CPUMonitorJr
 
     End Sub
 
-    Sub socketOpened(ByVal s As Object, ByVal e As EventArgs)
+    Sub SocketOpened(ByVal s As Object, ByVal e As EventArgs)
 
         ' each time the web socket is opened, send the time, computer name, and IP Addresses
         gSendTheTime = True
@@ -240,20 +244,20 @@ Public Class CPUMonitorJr
 
     End Sub
 
-    Sub socketClosed(ByVal s As Object, ByVal e As EventArgs)
+    Sub SocketClosed(ByVal s As Object, ByVal e As EventArgs)
 
         Timer.Stop()
 
     End Sub
 
-    Sub socketError(ByVal s As Object, ByVal e As SuperSocket.ClientEngine.ErrorEventArgs)
+    Sub SocketError(ByVal s As Object, ByVal e As SuperSocket.ClientEngine.ErrorEventArgs)
 
     End Sub
 
-    Sub socketMessage(ByVal s As Object, ByVal e As WebSocket4Net.MessageReceivedEventArgs)
+    Sub SocketMessage(ByVal s As Object, ByVal e As WebSocket4Net.MessageReceivedEventArgs)
 
     End Sub
-    Sub socketDataReceived(ByVal ss As Object, ByVal e As WebSocket4Net.DataReceivedEventArgs)
+    Sub SocketDataReceived(ByVal ss As Object, ByVal e As WebSocket4Net.DataReceivedEventArgs)
 
     End Sub
 
@@ -275,7 +279,6 @@ Public Class CPUMonitorJr
         Const delayAfterSendingTheTimeOrComputerNameAndIPAddresses = 1000
         Const TwentyFourHours As Integer = 24 * 60 * 60 * 1000
 
-        Dim sw As New Stopwatch
         sw.Start()
 
         SyncLock synlockObject
@@ -383,7 +386,9 @@ Public Class CPUMonitorJr
 
             ' get External Address
             Try
-                External_Address = New System.Net.WebClient().DownloadString(gExternalIPIdentificationService).Trim
+                Using client As New System.Net.WebClient()
+                    External_Address = client.DownloadString(gExternalIPIdentificationService).Trim()
+                End Using
             Catch ex As Exception
             End Try
 
@@ -408,32 +413,34 @@ Public Class CPUMonitorJr
 
     Private Sub SendMemoryTemperatureAndCPUReadings()
 
+
+        ' in the tempArray:
+        '    byte 0 will be used for the whole number part of the percent of memory used
+        '    byte 1 will be used for the decimal part of the percent of memory used
+        '    byte 2 will be used for the whole number part of the average temperature
+        '    byte 3 will be used for the decimal part of the average temperature
+        '    byte 4 will be used for the whole number part of the max temperature
+        '    byte 5 will be used for the decimal part of the max temperature
+
+        Static Dim tempArray(6) As Byte
+
+        Static Dim numberOfCores As Integer = 0
+
         Try
+
             ' send data
 
-            ' byte 0 = is a '2' to represent this is a temperature and cpu data stream 
+            ' byte 0 = is a '2' to represent this is a temperature and CPU data stream 
             ' byte 1 = percent of memory used whole number
             ' byte 2 = percent of memory used decimal
             ' byte 3 = average temp whole number
             ' byte 4 = average temp decimal
             ' byte 3 = max temp whole number
             ' byte 5 = max temp decimal
-            ' byte 7 = number of cpus
-            ' byte 8 and on  = cpu busy of each cpu
-
-            Dim tempArray(6) As Byte
-
-            ' in the tempArray:
-            '    byte 0 will be used for the whole number part of the percent of memory used
-            '    byte 1 will be used for the decimal part of the percent of memory used
-            '    byte 2 will be used for the whole number part of the average temperture
-            '    byte 3 will be used for the decimal part of the average tempeture
-            '    byte 4 will be used for the whole number part of the max temperture
-            '    byte 5 will be used for the decimal part of the max tempeture
+            ' byte 7 = number of CPUs
+            ' byte 8 and on  = CPU busy of each CPU
 
             Dim CPUValues(gMaxCPUCoresSupported - 1) As Double
-
-            Dim numberOfCores As Integer
 
             Dim wholeNumber, decimalNumber As Integer
 
@@ -450,7 +457,6 @@ Public Class CPUMonitorJr
             decimalNumber = Math.Truncate(PercentOfMemoryUsedToOneDecimalPlace * 10) - wholeNumber * 10
             tempArray(0) = wholeNumber
             tempArray(1) = decimalNumber
-
 
             ' get the average and max temperatures
 
@@ -561,10 +567,10 @@ Public Class CPUMonitorJr
             tempArray(4) = wholeNumber
             tempArray(5) = decimalNumber
 
-            ' get the cpu readings 
-            ' Windows performace counters are used in stead of the results also availabe from Open Hardware Manager and Core Temp as Windows performace counters report virtual CPUs where Open Hardware Manager and Core Temp only report physical cpus
+            ' get the CPU readings 
+            ' Windows performance counters are used instead of the results also available from Open Hardware Manager and Core Temp as Windows performance counters report virtual CPUs where Open Hardware Manager and Core Temp only report physical CPUs
 
-            Dim pc As PerformanceCounter = New PerformanceCounter("Processor Information", "% Processor Time")
+            Dim pc As New PerformanceCounter("Processor Information", "% Processor Time")
             Dim cat = New PerformanceCounterCategory("Processor Information")
 
             Dim instanceNames As String() = cat.GetInstanceNames
@@ -590,7 +596,10 @@ Public Class CPUMonitorJr
                 cs.Add(s, pc.NextSample)
             Next
 
-            numberOfCores = filteredInstanceNames.Count
+            If numberOfCores = 0 Then
+                ' this only has to be assigned once
+                numberOfCores = filteredInstanceNames.Count
+            End If
 
             Dim index As Integer = 0
 
@@ -599,7 +608,7 @@ Public Class CPUMonitorJr
             For Each s In filteredInstanceNames
 
                 pc.InstanceName = s
-                CPUValues(index) = calculateCPUValue(cs(s), pc.NextSample)
+                CPUValues(index) = CalculateCPUValue(cs(s), pc.NextSample)
                 cs(s) = pc.NextSample
 
                 index += 1
@@ -610,15 +619,15 @@ Public Class CPUMonitorJr
 
             ' send data
 
-            ' byte 0 = is a '2' to represent this is a temperature and cpu data stream 
+            ' byte 0 = is a '2' to represent this is a temperature and CPU data stream 
             ' byte 1 = percent of memory used whole number
             ' byte 2 = percent of memory used decimal
             ' byte 3 = average temp whole number
             ' byte 4 = average temp decimal
             ' byte 3 = max temp whole number
             ' byte 5 = max temp decimal
-            ' byte 7 = number of cpus
-            ' byte 8 and on  = cpu busy of each cpu
+            ' byte 7 = number of CPUs
+            ' byte 8 and on  = CPU busy of each CPU
 
             Dim sendArray(numberOfCores + 7) As Byte
 
@@ -635,12 +644,14 @@ Public Class CPUMonitorJr
 
             sendArray(7) = numberOfCores
 
-            For x = 0 To numberOfCores - 1
+            For x As Integer = 0 To numberOfCores - 1
 
-                If CPUValues(x) > 0 Then
-                    sendArray(8 + x) = Int(Math.Round(CPUValues(x)))
-                Else
+                If CPUValues(x) > 100 Then
+                    sendArray(8 + x) = 100
+                ElseIf CPUValues(x) < 0 Then
                     sendArray(8 + x) = 0
+                Else
+                    sendArray(8 + x) = Int(Math.Round(CPUValues(x)))
                 End If
 
             Next
@@ -653,7 +664,7 @@ Public Class CPUMonitorJr
 
     End Sub
 
-    Public Shared Function calculateCPUValue(ByVal oldSample As CounterSample, ByVal newSample As CounterSample) As Double
+    Public Shared Function CalculateCPUValue(ByVal oldSample As CounterSample, ByVal newSample As CounterSample) As Double
 
         Dim difference As Double = (newSample.RawValue - oldSample.RawValue)
         Dim timeInterval As Double = (newSample.TimeStamp100nSec - oldSample.TimeStamp100nSec)
@@ -679,8 +690,8 @@ Public Class CPUMonitorJr
 
             For Each queryObj As ManagementObject In searcher.Get()
 
-                count = count + 1
-                avgTempKelvin = avgTempKelvin + queryObj("CurrentTemperature")
+                count += 1
+                avgTempKelvin += queryObj("CurrentTemperature")
 
             Next
 

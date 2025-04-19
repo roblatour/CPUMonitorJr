@@ -12,7 +12,7 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription("Server side of CPU Monitor Jr displaying CPU performance on an ESP32 display")>
 <Assembly: AssemblyCompany("Rob Latour")>
 <Assembly: AssemblyProduct("CPU Monitor")>
-<Assembly: AssemblyCopyright("Copyright © Rob Latour 2020 - 2022")>
+<Assembly: AssemblyCopyright("Copyright © Rob Latour 2020 - 2025")>
 <Assembly: AssemblyTrademark("")>
 
 <Assembly: ComVisible(False)>
@@ -31,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")>
 
-<Assembly: AssemblyVersion("2.0.0.0")>
-<Assembly: AssemblyFileVersion("2.0.0.0")>
+<Assembly: AssemblyVersion("2.1.0.0")>
+<Assembly: AssemblyFileVersion("2.1.0.0")>
