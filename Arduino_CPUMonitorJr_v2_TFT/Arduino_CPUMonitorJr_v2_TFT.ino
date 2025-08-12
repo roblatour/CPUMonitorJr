@@ -1,6 +1,6 @@
-// CPU Monitor Jr v2 (for TFT Display)
+// CPU Monitor Jr v2.01 (for TFT Display)
 //
-// Copyright Rob Latour, 2022
+// Copyright Rob Latour, 2022 - 2025
 // htts://raltour.com
 // https://github.com/roblatour/CPUMonitorJr
 //
@@ -32,13 +32,13 @@
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #include <WiFiClientSecure.h>
-#include <WebSocketsClient.h>
+#include <WebSocketsClient.h>  // Websockets by Markus Sattler
 #include <time.h>
-#include <TimeLib.h>
+#include <TimeLib.h>           // Time by Michael Margolis
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-#include <AsyncTCP.h>           // https://github.com/esphome/AsyncTCP (put all files in src directory into the AsyncTCP directory)
-#include <ESPAsyncWebServer.h>  // https://github.com/esphome/ESPAsyncWebServer (put all files in src directory into the ESPAsyncWebServer directory)
+#include "AsyncTCP.h"           // https://github.com/esphome/AsyncTCP (put all files in src directory into the AsyncTCP directory)
+#include "ESPAsyncWebServer.h"  // https://github.com/esphome/ESPAsyncWebServer (put all files in src directory into the ESPAsyncWebServer directory)
 #include <TFT_eSPI.h>           // please use the TFT_eSPI library found here: https://github.com/Xinyuan-LilyGO/T-Display-S3/tree/main/lib
 #include "pin_config.h"         // found at https://github.com/Xinyuan-LilyGO/T-Display-S3/tree/main/example/factory
 
@@ -1337,10 +1337,10 @@ void showAbout() {
 
   sprite.setTextDatum(TL_DATUM);
   sprite.drawString("CPU Monitor Jr.", 202, 38, 2);
-  sprite.drawString("v2", 307, 44, 1);
+  sprite.drawString("v2.01", 307, 44, 1);
   sprite.drawString("Copyright", 202, 54, 2);
-  sprite.drawString("Rob Latour, 2022", 202, 70, 2);
-  sprite.drawString("rlatour.com", 202, 86, 2);
+  sprite.drawString("Rob Latour, 2022 - 2025", 202, 70, 2);
+  sprite.drawString("github.com/roblatour/CPUMonitorJr", 202, 86, 2);
 
   String message;
   message = "  IP: ";
