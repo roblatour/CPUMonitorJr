@@ -3,7 +3,7 @@
 
 # CPU Monitor Jr
 
-CPU Monitor Jr. is an open source project for monitoring the performance of a Windows or Linux computer using a WiFi connected ESP32 board and TFT display.
+CPU Monitor Jr. is an open source project for monitoring the performance of Windows or Linux computers using a WiFi connected ESP32 board and TFT display.
 
 It uses of two platforms. 
 
