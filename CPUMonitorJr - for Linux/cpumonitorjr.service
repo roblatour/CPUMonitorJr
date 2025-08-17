@@ -1,0 +1,19 @@
+[Unit]
+Description=cpumonitorjr
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -u /usr/local/bin/cpumonitorjr.py
+WorkingDirectory=/usr/local/bin
+User=cpumonitorjr
+Group=cpumonitorjr
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
