@@ -3,9 +3,13 @@
 
 # CPU Monitor Jr
 
-CPU Monitor Jr. is an open source project for monitoring the performance of a Windows computer using a WiFi connected ESP32 board and TFT display.
+CPU Monitor Jr. is an open source project for monitoring the performance of a Windows or Linux computer using a WiFi connected ESP32 board and TFT display.
 
-It uses of two platforms. The first is Windows, with a Windows service gathering and sharing the computer's performance data.  The second is an ESP32, displaying that data on a TFT display.
+It uses of two platforms. 
+
+The first is either Windows, with a Windows service gathering and sharing the computer's performance data, or Linux, with a Linux service gathering and sharing the computer's performance data.  
+
+The second is an ESP32, displaying that data on a TFT display.
 
 Below is an example of two (ESP32) LilyGo T-Display S3 devices each monitoring a separate computer at the same time.  Displayed are the names and LAN IP addresses of each computer, as well as, their CPU temperature, memory percentage used, historical total and current core loads. The top device is monitoring a four core Windows computer, the bottom device is monitoring a 24 (48 virtual) core Windows computer.
 
@@ -16,6 +20,13 @@ Monitoring begins as soon as the computer is turned on.
 To get the CPU temperature CPU Monitor Jr.'s Windows service uses either [Open Hardware Monitor](https://openhardwaremonitor.org/) or [Core Temp](https://www.alcpu.com/CoreTemp/).  If Core Temp is used, the Core Temp program must also be running. This is explained in more detail, along with other aspects of the project, in the following video:
 
 The Core Temp program can be download from [here](https://www.alcpu.com/CoreTemp/). 
+
+The above file is not needed when running CPUMonitorJR on Linux.
+
+To change the Windows server, edit the file CPUMonitorJr.sln in this repository using Visual Studio
+To change the Linux server, edit the file cpumonitorjr.py in this repository in your favourite python/text editor
+To change the Arduio sketches, open up the .ino file in Arduino
+
 
 **As for the hardware ...**
 

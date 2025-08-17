@@ -1,1 +1,57 @@
-coming soon
+# Instructions to deploy CPUMonitorJr on Ubuntu Linux:
+
+# Prerequisites:
+
+Install Python 3 and required libraries:
+
+sudo apt update && sudo apt upgrade -y
+
+sudo apt install python3
+sudo apt install python3-psutil
+sudo apt install python3-websockets
+
+
+# Install the Python CPUMonitor script:
+
+cd /usr/local/bin/
+sudo wget -P /usr/local/bin/ https://raw.githubusercontent.com/roblatour/CPUMonitorJr/refs/heads/main/CPUMonitorJr%20-%20for%20Linux/cpumonitorjr.py
+sudo chown root:root /usr/local/bin/cpumonitorjr.py
+sudo chmod 755 /usr/local/bin/cpumonitorjr.py
+
+# Create a user and group for the service:
+sudo groupadd cpumonitorjr
+sudo useradd -r -g cpumonitorjr -s /sbin/nologin cpumonitorjr
+
+# Install the Systemd Service:
+cd /etc/systemd/system/
+sudo wget -P /etc/systemd/system/ https://raw.githubusercontent.com/roblatour/CPUMonitorJr/refs/heads/main/CPUMonitorJr%20-%20for%20Linux/cpumonitorjr.service
+
+
+# Set permissions for the log directory:
+sudo mkdir -p /var/log/CPUMonitorJr
+sudo chown cpumonitorjr:cpumonitorjr /var/log/CPUMonitorJr
+sudo chmod 750 /var/log/CPUMonitorJr
+
+#Reload systemd:
+sudo systemctl daemon-reload
+
+#Enable the service to start on boot:
+sudo systemctl enable cpumonitorjr.service
+
+#Start the service:
+sudo systemctl start cpumonitorjr.service
+
+# (optional) check the service status:
+sudo systemctl status cpumonitorjr.service
+
+# (optional) check system log:
+sudo journalctl -u cpumonitorjr.service
+
+# (optional) check the CPUMonitorJr log file:
+cat /var/log/CPUMonitorJr/CPUMonitorJr.log
+
+# (optional) if you change /usr/local/bin/cpumonitorjr.py (for example to change the default port being used)
+sudo systemctl daemon-reload
+sudo systemctl restart cpumonitorjr.service
+
+# Enjoy
