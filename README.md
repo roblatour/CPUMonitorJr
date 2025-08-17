@@ -21,11 +21,11 @@ To get the CPU temperature CPU Monitor Jr.'s Windows service uses either [Open H
 
 The Core Temp program can be download from [here](https://www.alcpu.com/CoreTemp/). 
 
-The above file is not needed when running CPUMonitorJR on Linux.
+The above file is not needed when running CPUMonitorJR on Linux.<br>
 
-To change the Windows server, edit the file CPUMonitorJr.sln in this repository using Visual Studio
-To change the Linux server, edit the file cpumonitorjr.py in this repository in your favourite python/text editor
-To change the Arduio sketches, open up the .ino file in Arduino
+To change the Windows server, edit the file CPUMonitorJr.sln in this repository using Visual Studio.<br>
+To change the Linux server, edit the file cpumonitorjr.py in this repository in your favourite python/text editor.<br>
+To change the Arduio sketches, open up the .ino file in Arduino.<br>
 
 
 **As for the hardware ...**
