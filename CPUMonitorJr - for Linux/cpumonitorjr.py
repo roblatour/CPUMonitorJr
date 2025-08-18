@@ -4,6 +4,7 @@ import contextlib
 import logging
 import logging.handlers
 import os
+import sys
 import signal
 import socket
 import time
@@ -15,7 +16,7 @@ import psutil
 import websockets
 # =============================================================================
 #
-# CPUMonitorJr (for Linux) v1
+# CPUMonitorJr (for Linux) v2
 # Copyright Rob Latour, 2025
 # License MIT
 #
@@ -88,9 +89,43 @@ WS = None  # type: Optional[websockets.WebSocketClientProtocol]
 WS_IP: Optional[str] = None
 
 
-def setup_logging():
-    os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
+def _is_nologging_flag_present() -> bool:
+    """Return True if the command-line flag -nologging is present."""
+    try:
+        return any(arg.lower() == "-nologging" for arg in sys.argv[1:])
+    except Exception:
+        return False
+
+
+def setup_logging(enabled: bool = True):
+    """Configure logging.
+
+    When enabled is False:
+      - Do not create any directories or files.
+      - Disable the CPUMonitorJr logger so calls are no-ops.
+    When enabled is True:
+      - Ensure the log directory exists.
+      - Ensure the log file exists (create if missing).
+      - Configure a rotating file handler and optional syslog handler.
+    """
     logger = logging.getLogger("CPUMonitorJr")
+    # Clear any existing handlers to avoid duplicates if reconfigured
+    logger.handlers = []
+
+    if not enabled:
+        logger.propagate = False
+        logger.disabled = True
+        return logger
+
+    # Ensure directory exists
+    log_dir = os.path.dirname(LOG_FILE) or "."
+    os.makedirs(log_dir, exist_ok=True)
+    # Ensure file exists (touch)
+    with open(LOG_FILE, "a", encoding="utf-8"):
+        pass
+
+    logger.disabled = False
+    logger.propagate = False
     logger.setLevel(logging.INFO)
 
     fh = logging.handlers.RotatingFileHandler(LOG_FILE, maxBytes=10*1024*1024, backupCount=5)
@@ -104,6 +139,7 @@ def setup_logging():
             sh.setFormatter(logging.Formatter("CPUMonitorJr: %(message)s"))
             logger.addHandler(sh)
         except Exception as e:
+            # If syslog isn't available, continue without it but record once in the file log
             logger.warning(f"Syslog not available, continuing without syslog: {e}")
     return logger
 
@@ -527,8 +563,8 @@ def install_signals():
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
-async def main_async():
-    logger = setup_logging()
+async def main_async(no_logging: bool = False):
+    logger = setup_logging(enabled=not no_logging)
     install_signals()
     logger.info(f"Starting CPUMonitorJr (UDP port {UDP_LISTEN_PORT}, interval {WS_INTERVAL_SEC:.3f}s)")
     
@@ -571,7 +607,7 @@ async def main_async():
 
 
 def main():
-    asyncio.run(main_async())
+    asyncio.run(main_async(no_logging=_is_nologging_flag_present()))
 
 
 if __name__ == "__main__":

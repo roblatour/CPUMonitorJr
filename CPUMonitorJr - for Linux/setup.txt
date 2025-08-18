@@ -26,11 +26,18 @@ sudo useradd -r -g cpumonitorjr -s /sbin/nologin cpumonitorjr
 cd /etc/systemd/system/
 sudo wget -P /etc/systemd/system/ https://raw.githubusercontent.com/roblatour/CPUMonitorJr/refs/heads/main/CPUMonitorJr%20-%20for%20Linux/cpumonitorjr.service
 
-
 # Set permissions for the log directory:
 sudo mkdir -p /var/log/CPUMonitorJr
 sudo chown cpumonitorjr:cpumonitorjr /var/log/CPUMonitorJr
 sudo chmod 750 /var/log/CPUMonitorJr
+
+# (optional) the service definition can be edited to add an argument -nologging which will prevent the service from logging to the log file found at /var/log/CPUMonitorJr
+# if you want to do this you can use 
+sudo nano /etc/systemd/system/cpumonitorjr.service
+# and change the line
+ExecStart=/usr/bin/python3 -u /usr/local/bin/cpumonitorjr.py
+# to 
+ExecStart=/usr/bin/python3 -u /usr/local/bin/cpumonitorjr.py -nologging
 
 #Reload systemd:
 sudo systemctl daemon-reload
