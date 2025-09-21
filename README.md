@@ -17,7 +17,7 @@ Below is an example of two (ESP32) LilyGo T-Display S3 devices each monitoring a
 
 Monitoring begins as soon as the computer is turned on.
 
-To get the CPU temperature CPU Monitor Jr.'s Windows service uses either [Open Hardware Monitor](https://openhardwaremonitor.org/) or [Core Temp](https://www.alcpu.com/CoreTemp/).  If Core Temp is used, the Core Temp program must also be running. This is explained in more detail, along with other aspects of the project, in this [video](https://www.youtube.com/watch?v=5jUwFiMfWok&t=885s)
+To get the CPU temperature CPU Monitor Jr.'s Windows service uses either [Open Hardware Monitor](https://openhardwaremonitor.org/) or [Core Temp](https://www.alcpu.com/CoreTemp/).  If Core Temp is used, the Core Temp program must also be running. This is explained in more detail, along with other aspects of the project, in this [video](https://www.youtube.com/watch?v=5jUwFiMfWok&t=885s).
 
 The Core Temp program can be download from [here](https://www.alcpu.com/CoreTemp/). 
 
