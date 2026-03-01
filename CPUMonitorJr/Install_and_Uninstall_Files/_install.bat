@@ -1,9 +1,28 @@
 cls
 setlocal EnableExtensions EnableDelayedExpansion
 
-set "INSTALLUTIL=E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\Install_and_Uninstall_Files\InstallUtil.exe"
-set "SERVICE_EXE=E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe"
+set "INSTALLUTIL=%~dp0InstallUtil.exe"
+set "SERVICE_EXE=%~dp0..\bin\Release\CPUMonitorJR.exe"
+for %%I in ("%SERVICE_EXE%") do set "SERVICE_DIR=%%~dpI"
 set "PAWNIO_SETUP_URL=https://github.com/namazso/PawnIO.Setup/releases/download/2.1.0/PawnIO_setup.exe"
+
+if not exist "%INSTALLUTIL%" (
+    echo InstallUtil.exe not found: "%INSTALLUTIL%"
+    time /t
+    pause
+    endlocal
+    exit /b 1
+)
+
+if not exist "%SERVICE_EXE%" (
+    echo Service executable not found: "%SERVICE_EXE%"
+    time /t
+    pause
+    endlocal
+    exit /b 1
+)
+
+powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $p='%SERVICE_EXE%'; $d='%SERVICE_DIR%'; if (Test-Path $p) { Unblock-File -Path $p -ErrorAction SilentlyContinue }; if (Test-Path $d) { Get-ChildItem -Path $d -File | Unblock-File -ErrorAction SilentlyContinue }; exit 0 } catch { exit 0 }"
 set "PAWNIO_SETUP_PATH=%TEMP%\PawnIO_setup.exe"
 set "WINGET_EXE=winget"
 
@@ -64,8 +83,21 @@ if !errorlevel! equ 0 (
 
 echo Installing CPUMonitorJr service...
 "%INSTALLUTIL%" "%SERVICE_EXE%"
-sc description CPUMonitorJr "Server side of CPU Monitor Jr displaying CPU performance on an ESP32 driven TFT display"
-sc config CPUMonitorJr start= auto
+if !errorlevel! neq 0 (
+    echo CPUMonitorJr installation failed.
+    time /t
+    pause
+    endlocal
+    exit /b 1
+)
+
+sc query CPUMonitorJr >nul 2>&1
+if !errorlevel! equ 0 (
+    sc description CPUMonitorJr "Server side of CPU Monitor Jr displaying CPU performance on an ESP32 driven TFT display"
+    sc config CPUMonitorJr start= auto
+) else (
+    echo CPUMonitorJr service was not created.
+)
 rem net start CPUMonitorJr
 
 time /t
