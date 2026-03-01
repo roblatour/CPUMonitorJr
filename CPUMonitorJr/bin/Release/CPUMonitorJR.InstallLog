@@ -985,3 +985,203 @@ Affected parameters are:
    logtoconsole = 
    assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
    logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Uninstalling assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Removing EventLog source CPUMonitorJr.
+Service CPUMonitorJr is being removed from the system...
+Service CPUMonitorJr was successfully removed from the system.
+Installing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+An exception occurred while trying to find the installers in the E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe assembly.
+System.Reflection.ReflectionTypeLoadException: Unable to load one or more of the requested types. Retrieve the LoaderExceptions property for more information.
+Aborting installation for E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe.
+Rolling back assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+An exception occurred while trying to find the installers in the E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe assembly.
+System.Reflection.ReflectionTypeLoadException: Unable to load one or more of the requested types. Retrieve the LoaderExceptions property for more information.
+Aborting installation for E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe.
+Installing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+An exception occurred while trying to find the installers in the E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe assembly.
+System.Reflection.ReflectionTypeLoadException: Unable to load one or more of the requested types. Retrieve the LoaderExceptions property for more information.
+Aborting installation for E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe.
+Rolling back assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+An exception occurred while trying to find the installers in the E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe assembly.
+System.Reflection.ReflectionTypeLoadException: Unable to load one or more of the requested types. Retrieve the LoaderExceptions property for more information.
+Aborting installation for E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe.
+Installing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Installing service CPUMonitorJr...
+Service CPUMonitorJr has been successfully installed.
+Creating EventLog source CPUMonitorJr in log Application...
+An exception occurred in the OnAfterInstall event handler of CPUMonitorJr.ProjectInstaller.
+System.InvalidOperationException: Cannot start service CPUMonitorJr on computer '.'.
+The inner exception System.ComponentModel.Win32Exception was thrown with the following error message: The service did not respond to the start or control request in a timely fashion.
+Rolling back assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Restoring event log to previous state for source CPUMonitorJr.
+Service CPUMonitorJr is being removed from the system...
+Service CPUMonitorJr was successfully removed from the system.
+Installing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Installing service CPUMonitorJr...
+Service CPUMonitorJr has been successfully installed.
+Creating EventLog source CPUMonitorJr in log Application...
+Committing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Uninstalling assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Removing EventLog source CPUMonitorJr.
+Service CPUMonitorJr is being removed from the system...
+Service CPUMonitorJr was successfully removed from the system.
+Installing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Installing service CPUMonitorJr...
+Creating EventLog source CPUMonitorJr in log Application...
+Rolling back assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Restoring event log to previous state for source CPUMonitorJr.
+Installing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Installing service CPUMonitorJr...
+Service CPUMonitorJr has been successfully installed.
+Creating EventLog source CPUMonitorJr in log Application...
+Committing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Installing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Installing service CPUMonitorJr...
+Creating EventLog source CPUMonitorJr in log Application...
+Rolling back assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Restoring event log to previous state for source CPUMonitorJr.
+Installing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Installing service CPUMonitorJr...
+Creating EventLog source CPUMonitorJr in log Application...
+Rolling back assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Restoring event log to previous state for source CPUMonitorJr.
+Uninstalling assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Removing EventLog source CPUMonitorJr.
+Service CPUMonitorJr is being removed from the system...
+Service CPUMonitorJr was successfully removed from the system.
+Installing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Installing service CPUMonitorJr...
+Service CPUMonitorJr has been successfully installed.
+Creating EventLog source CPUMonitorJr in log Application...
+Committing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Installing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Installing service CPUMonitorJr...
+Creating EventLog source CPUMonitorJr in log Application...
+Rolling back assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Restoring event log to previous state for source CPUMonitorJr.
+Installing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Installing service CPUMonitorJr...
+Creating EventLog source CPUMonitorJr in log Application...
+Rolling back assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Restoring event log to previous state for source CPUMonitorJr.
+Uninstalling assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Removing EventLog source CPUMonitorJr.
+Service CPUMonitorJr is being removed from the system...
+Service CPUMonitorJr was successfully removed from the system.
+Installing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog
+Installing service CPUMonitorJr...
+Service CPUMonitorJr has been successfully installed.
+Creating EventLog source CPUMonitorJr in log Application...
+Committing assembly 'E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.exe
+   logfile = E:\Documents\VBNet\CPUMonitorJr\CPUMonitorJr\bin\Release\CPUMonitorJR.InstallLog

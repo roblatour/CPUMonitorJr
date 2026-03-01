@@ -33,6 +33,7 @@
         'ServiceInstaller1
         '
         Me.ServiceInstaller1.ServiceName = "CPUMonitorJr"
+        Me.ServiceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic
         '
         'ProjectInstaller
         '

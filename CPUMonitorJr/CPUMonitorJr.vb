@@ -1,4 +1,4 @@
-﻿' Copyright Rob Latour, 2025
+﻿' Copyright Rob Latour, 2026
 Imports System.Runtime.InteropServices
 
 Imports System.Threading
@@ -10,11 +10,12 @@ Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Devices
 Imports System.Data.Common
 Imports System.Runtime.Remoting.Lifetime
-Imports OpenHardwareMonitor.Hardware
+Imports System.Reflection
+Imports System.ServiceProcess
+Imports LibreHardwareMonitor.Hardware
 Imports GetCoreTempInfoNET
 
-
-' will autostart after install ref: https://www.aspsnippets.com/Articles/Start-Windows-Service-Automatically-start-after-Installation-in-C-and-VBNet.aspx#:~:text=We%20can%20start%20the%20Windows,to%20start%20the%20Windows%20Service.
+' will auto-start after install ref: https://www.aspsnippets.com/Articles/Start-Windows-Service-Automatically-start-after-Installation-in-C-and-VBNet.aspx#:~:text=We%20can%20start%20the%20Windows,to%20start%20the%20Windows%20Service.
 
 Public Class CPUMonitorJr
 
@@ -48,10 +49,26 @@ Public Class CPUMonitorJr
 
     Private Const gExternalIPIdentificationService As String = "https://api.ipify.org"
 
-    ' used by Open Hardware Monitor to get temperature readings 
+    ' used by LibreHardwareMonitorLib (https://github.com/LibreHardwareMonitor/LibreHardwareMonitor)
+    ' to get temperature readings through PawnIO (https://github.com/namazso/PawnIO)
 
-    Private updateVisitor As New OpenHardwareMonitor.UpdateVisitor()
-    Private computer As New Global.OpenHardwareMonitor.Hardware.Computer()
+    Private Const gPawnIOServiceName As String = "pawnio"
+    Private Const gPawnIOHealthCheckIntervalSeconds As Integer = 15
+    Private Const gPawnIORestartWindowMinutes As Integer = 5
+    Private Const gPawnIOMaxRestartAttemptsInWindow As Integer = 3
+    Private Const gPawnIOLogCooldownSeconds As Integer = 60
+
+    Private updateVisitor As LibreHardwareMonitor.UpdateVisitor
+    Private computer As Global.LibreHardwareMonitor.Hardware.Computer
+    Private gCanUseLibreHardwareMonitor As Boolean = False
+    Private gLastPawnIOHealthCheckUtc As DateTime = DateTime.MinValue
+    Private gLastPawnIOStatusKnownGood As Boolean = False
+    Private gPawnIORestartWindowStartUtc As DateTime = DateTime.MinValue
+    Private gPawnIORestartAttemptsInWindow As Integer = 0
+    Private gLastPawnIOMissingLogUtc As DateTime = DateTime.MinValue
+    Private gLastPawnIORestartFailureLogUtc As DateTime = DateTime.MinValue
+    Private gNoTemperatureWarningLogged As Boolean = False
+    Private gIsStopping As Boolean = False
 
     ' used by Core Temp to get temperature readings 
 
@@ -75,14 +92,38 @@ Public Class CPUMonitorJr
 
     Protected Overrides Sub OnStart(ByVal args() As String)
 
+        gIsStopping = False
+
         Try
 
-            If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "Starting up" & vbCrLf, True)
+            If gDebugOn Then
+                Dim executingAssembly As Assembly = Assembly.GetExecutingAssembly()
+                Dim serviceName As String = executingAssembly.GetName().Name
+                Dim serviceVersion As String = executingAssembly.GetName().Version.ToString()
+                My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "Starting up " & serviceName & " version " & serviceVersion & vbCrLf, True)
+                My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "For more information please see: https://github.com/roblatour/CPUMonitorJr" & vbCrLf, True)
+            End If
 
-            ' initialize Open Hardware Manager
-            computer.Open()
-            computer.CPUEnabled = True
-            computer.Accept(updateVisitor)
+            Try
+                If EnsurePawnIOReadyForStartup() Then
+                    updateVisitor = New LibreHardwareMonitor.UpdateVisitor()
+                    computer = New Global.LibreHardwareMonitor.Hardware.Computer()
+                    computer.IsCpuEnabled = True
+                    computer.IsMotherboardEnabled = True
+                    computer.IsControllerEnabled = True
+                    computer.Open()
+                    computer.Accept(updateVisitor)
+                    gCanUseLibreHardwareMonitor = True
+                Else
+                    gCanUseLibreHardwareMonitor = False
+                    computer = Nothing
+                    If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "PawnIO unavailable at startup. LibreHardwareMonitor disabled; CoreTemp/WMI fallback will be used." & vbCrLf, True)
+                End If
+            Catch ex As Exception
+                gCanUseLibreHardwareMonitor = False
+                computer = Nothing
+                If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "LibreHardwareMonitor init failed" & vbCrLf & ex.ToString & vbCrLf, True)
+            End Try
 
             ' establish a timer which will be used to trigger sending data to the ESP32
             ' however, don't start it now; rather it will be started once the ESP32 identifies itself later on
@@ -90,7 +131,7 @@ Public Class CPUMonitorJr
             Timer = New System.Timers.Timer With {
                 .Enabled = False
             }
-            Dim Interval As Integer = Math.Max(My.Settings.Interval, 200) ' determine how frequentely data should be sent to the ESP32, minimum is once every 200 milliseconds
+            Dim Interval As Integer = Math.Max(My.Settings.Interval, 200) ' determine how frequently data should be sent to the ESP32, minimum is once every 200 milliseconds
             Timer.Interval = Interval
             AddHandler Timer.Elapsed, AddressOf Timer_Elapsed
 
@@ -99,7 +140,7 @@ Public Class CPUMonitorJr
             gUDPListenPort = CInt(My.Settings.UDPPort.Trim)
 
             Try
-                ' send a boardcast asking ESP32 to identify itself
+                ' send a broadcast asking ESP32 to identify itself
 
                 AddHandler Broadcast.DataArrival1, AddressOf UDPTrigger
                 Broadcast.UDP_Listen1(gUDPListenPort)
@@ -123,12 +164,27 @@ Public Class CPUMonitorJr
 
     Protected Overrides Sub OnStop()
 
-        Timer.Stop()
-
-        computer.Close()
+        gIsStopping = True
 
         If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "Closing UDP listening port" & vbCrLf, True)
-        modBroadcast.Broadcast.CloseSock1()
+
+        Try
+            If Timer IsNot Nothing Then Timer.Stop()
+        Catch ex As Exception
+            If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "Timer stop failed" & vbCrLf & ex.ToString & vbCrLf, True)
+        End Try
+
+        Try
+            If computer IsNot Nothing Then computer.Close()
+        Catch ex As Exception
+            If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "Computer close failed" & vbCrLf & ex.ToString & vbCrLf, True)
+        End Try
+
+        Try
+            modBroadcast.Broadcast.CloseSock1()
+        Catch ex As Exception
+            If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "UDP socket close failed" & vbCrLf & ex.ToString & vbCrLf, True)
+        End Try
 
     End Sub
 
@@ -191,11 +247,11 @@ Public Class CPUMonitorJr
 
             gWebSocket = New WebSocket4Net.WebSocket(WebSocketAddress)
 
-            AddHandler gWebSocket.Opened, Sub(s, e) SocketOpened(s, e)
-            AddHandler gWebSocket.Error, Sub(s, e) SocketError(s, e)
-            AddHandler gWebSocket.Closed, Sub(s, e) SocketClosed(s, e)
-            AddHandler gWebSocket.MessageReceived, Sub(s, e) SocketMessage(s, e)
-            AddHandler gWebSocket.DataReceived, Sub(s, e) SocketDataReceived(s, e)
+            AddHandler gWebSocket.Opened, AddressOf SocketOpened
+            AddHandler gWebSocket.Error, AddressOf SocketError
+            AddHandler gWebSocket.Closed, AddressOf SocketClosed
+            AddHandler gWebSocket.MessageReceived, AddressOf SocketMessage
+            AddHandler gWebSocket.DataReceived, AddressOf SocketDataReceived
 
             gWebSocket.Open()
 
@@ -216,11 +272,11 @@ Public Class CPUMonitorJr
 
         Try
 
-            RemoveHandler gWebSocket.Opened, Sub(s, e) SocketOpened(s, e)
-            RemoveHandler gWebSocket.Error, Sub(s, e) SocketError(s, e)
-            RemoveHandler gWebSocket.Closed, Sub(s, e) SocketClosed(s, e)
-            RemoveHandler gWebSocket.MessageReceived, Sub(s, e) SocketMessage(s, e)
-            RemoveHandler gWebSocket.DataReceived, Sub(s, e) SocketDataReceived(s, e)
+            RemoveHandler gWebSocket.Opened, AddressOf SocketOpened
+            RemoveHandler gWebSocket.Error, AddressOf SocketError
+            RemoveHandler gWebSocket.Closed, AddressOf SocketClosed
+            RemoveHandler gWebSocket.MessageReceived, AddressOf SocketMessage
+            RemoveHandler gWebSocket.DataReceived, AddressOf SocketDataReceived
 
             gWebSocket.Close()
 
@@ -265,13 +321,15 @@ Public Class CPUMonitorJr
 
     Private Sub Timer_Elapsed(sender As Object, e As ElapsedEventArgs) Handles Timer.Elapsed
 
+        If gIsStopping Then Exit Sub
+
         ' for this timer tick
 
         '    when the gSendTheTime flag is set send the time data
         '    also send the time data approximately 24 hours after the last time the time data was sent
         '    this will help keep the time displayed on the esp32 in sync with the computer's time
 
-        '    when the gSendTheComputerNameAndIPAddresses flag is set send the computer name and ip addresss 
+        '    when the gSendTheComputerNameAndIPAddresses flag is set send the computer name and IP address 
 
         '    if neither the gSendTheTime nor gSendTheComputerNameAndIPAddresses flag are set, send the memory, temperature and CPU readings
 
@@ -460,47 +518,73 @@ Public Class CPUMonitorJr
 
             ' get the average and max temperatures
 
-            ' the first approach try using the Open Hardware Monitor approach
+            ' the first approach try using the Libre Hardware Monitor approach
 
             Dim averageTemperature As Single = 0
             Dim maximumTemperature As Single = 0
 
-            For i As Integer = 0 To computer.Hardware.Length - 1
+            If gCanUseLibreHardwareMonitor AndAlso computer IsNot Nothing AndAlso EnsurePawnIOReadyDuringRuntime() Then
+                computer.Accept(updateVisitor)
 
-                If computer.Hardware(i).HardwareType = HardwareType.CPU Then
+                Dim temperatureReadingCount As Integer = 0
+                Dim totalTemperature As Single = 0
 
-                    Dim averageFound As Boolean = False
-                    Dim maxFound As Boolean = False
+                For i As Integer = 0 To computer.Hardware.Count - 1
 
-                    For j As Integer = 0 To computer.Hardware(i).Sensors.Length - 1
+                    For j As Integer = 0 To computer.Hardware(i).Sensors.Count - 1
 
                         If computer.Hardware(i).Sensors(j).SensorType = SensorType.Temperature Then
 
-                            If computer.Hardware(i).Sensors(j).Name.Contains("Average") Then
-                                averageTemperature = computer.Hardware(i).Sensors(j).Value
-                                averageFound = True
-                                Exit For
-                            End If
+                            Dim includeSensor As Boolean = (computer.Hardware(i).HardwareType = HardwareType.Cpu) OrElse (computer.Hardware(i).Sensors(j).Name.IndexOf("CPU", StringComparison.OrdinalIgnoreCase) >= 0)
+                            If includeSensor Then
+                                Dim sensorValue = computer.Hardware(i).Sensors(j).Value
+                                If sensorValue.HasValue Then
+                                    Dim reading As Single = sensorValue.Value
+                                    If reading > 0 Then
+                                        temperatureReadingCount += 1
+                                        totalTemperature += reading
 
-                            If computer.Hardware(i).Sensors(j).Name.Contains("Max") Then
-                                maximumTemperature = computer.Hardware(i).Sensors(j).Value
-                                maxFound = True
-                            End If
-
-                            If averageFound AndAlso maxFound Then
-                                Exit For
+                                        If reading > maximumTemperature Then
+                                            maximumTemperature = reading
+                                        End If
+                                    End If
+                                End If
                             End If
 
                         End If
 
                     Next
 
+                    For Each subHardware As IHardware In computer.Hardware(i).SubHardware
+                        For k As Integer = 0 To subHardware.Sensors.Count - 1
+                            If subHardware.Sensors(k).SensorType = SensorType.Temperature Then
+                                Dim includeSubSensor As Boolean = (subHardware.HardwareType = HardwareType.Cpu) OrElse (subHardware.Sensors(k).Name.IndexOf("CPU", StringComparison.OrdinalIgnoreCase) >= 0)
+                                If includeSubSensor Then
+                                    Dim subSensorValue = subHardware.Sensors(k).Value
+                                    If subSensorValue.HasValue Then
+                                        Dim subReading As Single = subSensorValue.Value
+                                        If subReading > 0 Then
+                                            temperatureReadingCount += 1
+                                            totalTemperature += subReading
 
+                                            If subReading > maximumTemperature Then
+                                                maximumTemperature = subReading
+                                            End If
+                                        End If
+                                    End If
+                                End If
+                            End If
+                        Next
+                    Next
+
+                Next
+
+                If temperatureReadingCount > 0 Then
+                    averageTemperature = totalTemperature / temperatureReadingCount
                 End If
+            End If
 
-            Next
-
-            ' if the Open Hardware Monitor approach did not work try the Core Temp approach  
+            ' if the LibreHardwareMonitorLib (through PawnIO) approach did not work try the Core Temp approach  
 
             If (averageTemperature = 0) AndAlso (maximumTemperature = 0) Then
 
@@ -551,6 +635,19 @@ Public Class CPUMonitorJr
 
             End If
 
+            If (averageTemperature = 0) AndAlso (maximumTemperature = 0) Then
+                Dim wmiTemperature As Single = GetTemp()
+                If wmiTemperature > 0 Then
+                    averageTemperature = wmiTemperature
+                    maximumTemperature = wmiTemperature
+                Else
+                    If (Not gNoTemperatureWarningLogged) AndAlso gDebugOn AndAlso (Not gIsStopping) Then
+                        My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "No temperature available from LibreHardwareMonitor, CoreTemp, or WMI" & vbCrLf, True)
+                        gNoTemperatureWarningLogged = True
+                    End If
+                End If
+            End If
+
             'load the average temperature
 
             TemperatureToOneDecimalPlace = Math.Round(averageTemperature, 1, MidpointRounding.AwayFromZero)
@@ -568,7 +665,7 @@ Public Class CPUMonitorJr
             tempArray(5) = decimalNumber
 
             ' get the CPU readings 
-            ' Windows performance counters are used instead of the results also available from Open Hardware Manager and Core Temp as Windows performance counters report virtual CPUs where Open Hardware Manager and Core Temp only report physical CPUs
+            ' Windows performance counters are used instead of the results also available from LibreHardwareMonitorLib and Core Temp as Windows performance counters report virtual CPUs where LibreHardwareMonitorLib and Core Temp only report physical CPUs
 
             Dim pc As New PerformanceCounter("Processor Information", "% Processor Time")
             Dim cat = New PerformanceCounterCategory("Processor Information")
@@ -664,6 +761,132 @@ Public Class CPUMonitorJr
 
     End Sub
 
+    Private Function EnsurePawnIOReadyForStartup() As Boolean
+
+        Dim serviceController As ServiceController = Nothing
+
+        Try
+            serviceController = New ServiceController(gPawnIOServiceName)
+            Dim status = serviceController.Status
+
+            If status = ServiceControllerStatus.Running Then
+                Return True
+            End If
+
+            If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "PawnIO is installed but not running. Attempting to start it." & vbCrLf, True)
+
+            serviceController.Start()
+            serviceController.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(15))
+
+            Dim running = (serviceController.Status = ServiceControllerStatus.Running)
+
+            If running Then
+                If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "PawnIO started successfully." & vbCrLf, True)
+            Else
+                If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "PawnIO did not reach Running state during startup." & vbCrLf, True)
+            End If
+
+            Return running
+
+        Catch ex As InvalidOperationException
+            If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "PawnIO service is not installed. LibreHardwareMonitor will not be used." & vbCrLf, True)
+            Return False
+        Catch ex As Exception
+            If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "PawnIO startup check failed." & vbCrLf & ex.ToString & vbCrLf, True)
+            Return False
+        Finally
+            If serviceController IsNot Nothing Then
+                serviceController.Dispose()
+            End If
+        End Try
+
+    End Function
+
+    Private Function EnsurePawnIOReadyDuringRuntime() As Boolean
+
+        Dim nowUtc As DateTime = DateTime.UtcNow
+
+        If gLastPawnIOHealthCheckUtc <> DateTime.MinValue AndAlso nowUtc < gLastPawnIOHealthCheckUtc.AddSeconds(gPawnIOHealthCheckIntervalSeconds) Then
+            Return gLastPawnIOStatusKnownGood
+        End If
+
+        gLastPawnIOHealthCheckUtc = nowUtc
+
+        Dim serviceController As ServiceController = Nothing
+
+        Try
+            serviceController = New ServiceController(gPawnIOServiceName)
+            Dim status = serviceController.Status
+
+            If status = ServiceControllerStatus.Running Then
+                gLastPawnIOStatusKnownGood = True
+                Return True
+            End If
+
+            Dim shouldLogStopped As Boolean = (gLastPawnIORestartFailureLogUtc = DateTime.MinValue) OrElse (nowUtc >= gLastPawnIORestartFailureLogUtc.AddSeconds(gPawnIOLogCooldownSeconds))
+            If shouldLogStopped AndAlso gDebugOn Then
+                My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "PawnIO is not running. Attempting restart." & vbCrLf, True)
+            End If
+
+            If gPawnIORestartWindowStartUtc = DateTime.MinValue OrElse nowUtc >= gPawnIORestartWindowStartUtc.AddMinutes(gPawnIORestartWindowMinutes) Then
+                gPawnIORestartWindowStartUtc = nowUtc
+                gPawnIORestartAttemptsInWindow = 0
+            End If
+
+            gPawnIORestartAttemptsInWindow += 1
+
+            If gPawnIORestartAttemptsInWindow > gPawnIOMaxRestartAttemptsInWindow Then
+                gLastPawnIOStatusKnownGood = False
+                If shouldLogStopped AndAlso gDebugOn Then
+                    My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "PawnIO restart attempts exceeded limit in the current window." & vbCrLf, True)
+                    gLastPawnIORestartFailureLogUtc = nowUtc
+                End If
+                Return False
+            End If
+
+            If status <> ServiceControllerStatus.StartPending Then
+                serviceController.Start()
+            End If
+
+            serviceController.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(15))
+            gLastPawnIOStatusKnownGood = (serviceController.Status = ServiceControllerStatus.Running)
+
+            If gLastPawnIOStatusKnownGood Then
+                If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "PawnIO restarted successfully." & vbCrLf, True)
+                Return True
+            End If
+
+            If shouldLogStopped AndAlso gDebugOn Then
+                My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "PawnIO restart attempt failed." & vbCrLf, True)
+                gLastPawnIORestartFailureLogUtc = nowUtc
+            End If
+
+            Return False
+
+        Catch ex As InvalidOperationException
+            gLastPawnIOStatusKnownGood = False
+            Dim shouldLogMissing As Boolean = (gLastPawnIOMissingLogUtc = DateTime.MinValue) OrElse (nowUtc >= gLastPawnIOMissingLogUtc.AddSeconds(gPawnIOLogCooldownSeconds))
+            If shouldLogMissing AndAlso gDebugOn Then
+                My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "PawnIO service was not found during runtime. LibreHardwareMonitor is unavailable." & vbCrLf, True)
+                gLastPawnIOMissingLogUtc = nowUtc
+            End If
+            Return False
+        Catch ex As Exception
+            gLastPawnIOStatusKnownGood = False
+            Dim shouldLogFailure As Boolean = (gLastPawnIORestartFailureLogUtc = DateTime.MinValue) OrElse (nowUtc >= gLastPawnIORestartFailureLogUtc.AddSeconds(gPawnIOLogCooldownSeconds))
+            If shouldLogFailure AndAlso gDebugOn Then
+                My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "PawnIO runtime health check failed." & vbCrLf & ex.ToString & vbCrLf, True)
+                gLastPawnIORestartFailureLogUtc = nowUtc
+            End If
+            Return False
+        Finally
+            If serviceController IsNot Nothing Then
+                serviceController.Dispose()
+            End If
+        End Try
+
+    End Function
+
     Public Shared Function CalculateCPUValue(ByVal oldSample As CounterSample, ByVal newSample As CounterSample) As Double
 
         Dim difference As Double = (newSample.RawValue - oldSample.RawValue)
@@ -699,7 +922,7 @@ Public Class CPUMonitorJr
 
                 Result = avgTempKelvin / count
 
-                ' convert from Kalvin to Celsius
+                ' convert from Kelvin to Celsius
 
                 Result = Result / 10 - 273.2  ' normally this would be 273.15 however the results from the ManagementObject only returned to one decimal place
 
@@ -716,7 +939,7 @@ Public Class CPUMonitorJr
     End Function
 
 End Class
-Class OpenHardwareMonitor
+Class LibreHardwareMonitor
     Public Class UpdateVisitor
         Implements IVisitor
 
