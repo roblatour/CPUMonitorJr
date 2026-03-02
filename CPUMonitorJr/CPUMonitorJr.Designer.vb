@@ -42,7 +42,7 @@ Partial Class CPUMonitorJr
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         components = New System.ComponentModel.Container()
-        Me.ServiceName = "CPUMonitorJr"
+        Me.gServiceName = "CPUMonitorJr"
     End Sub
 
 End Class

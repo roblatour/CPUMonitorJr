@@ -81,12 +81,18 @@ Public Class CPUMonitorJr
 
     ' some misc. stuff
 
+    Private Shared gServiceName As String
+    Private Shared gServiceVersion As String
+
     Private Const gMaxCPUCoresSupported = 48
 
     Private Const gFiveNinths As Single = 5 / 9  ' used to convert Fahrenheit to Celsius
 
-    Private gSendTheTime As Boolean = True
-    Private gSendTheComputerNameAndIPAddresses As Boolean = True
+    Private Shared gSendTheTime As Boolean = True
+
+    Private Shared gSendTheComputerNameAndIPAddresses As Boolean = True
+
+
 
     Private sw As New Stopwatch
 
@@ -98,9 +104,9 @@ Public Class CPUMonitorJr
 
             If gDebugOn Then
                 Dim executingAssembly As Assembly = Assembly.GetExecutingAssembly()
-                Dim serviceName As String = executingAssembly.GetName().Name
-                Dim serviceVersion As String = executingAssembly.GetName().Version.ToString()
-                My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "Starting up " & serviceName & " version " & serviceVersion & vbCrLf, True)
+                gServiceName = executingAssembly.GetName().Name
+                gServiceVersion = executingAssembly.GetName().Version.ToString()
+                My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "Starting up " & gServiceName & " version " & gServiceVersion & vbCrLf, True)
                 My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "For more information please see: https://github.com/roblatour/CPUMonitorJr" & vbCrLf, True)
             End If
 
@@ -185,6 +191,10 @@ Public Class CPUMonitorJr
         Catch ex As Exception
             If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "UDP socket close failed" & vbCrLf & ex.ToString & vbCrLf, True)
         End Try
+
+        If gDebugOn Then
+            My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & gServiceName & " version " & gServiceVersion & " stopped " & vbCrLf, True)
+        End If
 
     End Sub
 
@@ -326,7 +336,7 @@ Public Class CPUMonitorJr
         ' for this timer tick
 
         '    when the gSendTheTime flag is set send the time data
-        '    also send the time data approximately 24 hours after the last time the time data was sent
+        '    also send the time data approximately 6 hours after the last time the time data was sent
         '    this will help keep the time displayed on the esp32 in sync with the computer's time
 
         '    when the gSendTheComputerNameAndIPAddresses flag is set send the computer name and IP address 
@@ -335,7 +345,7 @@ Public Class CPUMonitorJr
 
         Static Dim TimeSinceTimeWasLastSent = 0
         Const delayAfterSendingTheTimeOrComputerNameAndIPAddresses = 1000
-        Const TwentyFourHours As Integer = 24 * 60 * 60 * 1000
+        Const SixHours As Integer = 6 * 60 * 60 * 1000
 
         sw.Start()
 
@@ -345,7 +355,7 @@ Public Class CPUMonitorJr
 
                 Dim SendTheMemoryTemperatureAndCPUReadings As Boolean = Not (gSendTheTime OrElse gSendTheComputerNameAndIPAddresses)
 
-                If gSendTheTime OrElse (TimeSinceTimeWasLastSent > TwentyFourHours) Then
+                If gSendTheTime OrElse (TimeSinceTimeWasLastSent > SixHours) Then
 
                     SendTime()
                     TimeSinceTimeWasLastSent = 0
@@ -402,12 +412,11 @@ Public Class CPUMonitorJr
             sendArray(6) = RightNow.Minute
             sendArray(7) = RightNow.Second
 
-            If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "sending time" & vbCrLf, True)
+            If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "Sending time" & vbCrLf, True)
 
             gWebSocket.Send(sendArray, 0, sendArray.Length)
 
             gSendTheTime = False
-
 
         Catch ex As Exception
             If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & ex.ToString & vbCrLf, True)
@@ -457,7 +466,7 @@ Public Class CPUMonitorJr
             Dim sendArray() As Byte = System.Text.Encoding.ASCII.GetBytes("_" & ComputerNameAndIPAddresses)
 
             sendArray(0) = 1
-            If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "sending: " & ComputerNameAndIPAddresses & vbCrLf, True)
+            If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & Now.ToLongTimeString & vbTab & "Sending: " & ComputerNameAndIPAddresses & vbCrLf, True)
 
             gWebSocket.Send(sendArray, 0, sendArray.Length)
 
