@@ -88,11 +88,11 @@ Public Class CPUMonitorJr
 
     Private Const gFiveNinths As Single = 5 / 9  ' used to convert Fahrenheit to Celsius
 
-    Private Shared gSendTheTime As Boolean = True
-
     Private Shared gSendTheComputerNameAndIPAddresses As Boolean = True
 
-
+    Private Shared gSendTheTime As Boolean = True
+    Const gResyncTimeAfterThisManyHours As Double = 6              ' Resync the time with the ESP32 every 6 hours in case of drift
+    Private Shared gNextTimeTimeShouldBeResynced As Date = Now.AddHours(gResyncTimeAfterThisManyHours)
 
     Private sw As New Stopwatch
 
@@ -343,9 +343,7 @@ Public Class CPUMonitorJr
 
         '    if neither the gSendTheTime nor gSendTheComputerNameAndIPAddresses flag are set, send the memory, temperature and CPU readings
 
-        Static Dim TimeSinceTimeWasLastSent = 0
-        Const delayAfterSendingTheTimeOrComputerNameAndIPAddresses = 1000
-        Const SixHours As Integer = 6 * 60 * 60 * 1000
+        Const delayAfterSendingTheTimeOrComputerNameAndIPAddresses As Long = 1000
 
         sw.Start()
 
@@ -355,10 +353,9 @@ Public Class CPUMonitorJr
 
                 Dim SendTheMemoryTemperatureAndCPUReadings As Boolean = Not (gSendTheTime OrElse gSendTheComputerNameAndIPAddresses)
 
-                If gSendTheTime OrElse (TimeSinceTimeWasLastSent > SixHours) Then
+                If gSendTheTime OrElse (Now > gNextTimeTimeShouldBeResynced) Then
 
                     SendTime()
-                    TimeSinceTimeWasLastSent = 0
                     Thread.Sleep(delayAfterSendingTheTimeOrComputerNameAndIPAddresses)
 
                 End If
@@ -381,8 +378,6 @@ Public Class CPUMonitorJr
         End SyncLock
 
         sw.Stop()
-
-        TimeSinceTimeWasLastSent += Timer.Interval + sw.ElapsedMilliseconds
 
     End Sub
 
@@ -417,6 +412,7 @@ Public Class CPUMonitorJr
             gWebSocket.Send(sendArray, 0, sendArray.Length)
 
             gSendTheTime = False
+            gNextTimeTimeShouldBeResynced = Now.AddHours(gResyncTimeAfterThisManyHours)
 
         Catch ex As Exception
             If gDebugOn Then My.Computer.FileSystem.WriteAllText(gDebugFilename, Now.ToLongDateString & " " & ex.ToString & vbCrLf, True)
