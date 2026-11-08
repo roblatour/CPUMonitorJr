@@ -33,7 +33,7 @@ To change the Arduio sketches, open up the .ino file in Arduino.<br>
 Below are the (affiliated) links for the components used to put this project together:
 
 Version 2:
-- [LILYGO T-Display S3](https://s.click.aliexpress.com/e/_DexRAdn) 
+- [LILYGO T-Display S3](https://s.click.aliexpress.com/e/_c3X952ur) 
 
 <br>
 Version 1.1 (designed for an LCD display)
